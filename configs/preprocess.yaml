@@ -1,0 +1,63 @@
+# MIMIC-IV preprocessing config — hourly grid + quantile bins, in EHRFormer's
+# tensor format. The discretise-and-reconstruct protocol follows Apollo, but the
+# bin count and the time resolution below are not Apollo's.
+
+paths:
+  # MIMIC-IV-Ext-CLIF v1.1.0 (parquet) — single source of truth for cohort + events.
+  # Default points at the H100 server's upload location.
+  clif_root: /data/mimic_data/physionet.org/files/mimic-iv-ext-clif/1.1.0
+  # Where pipeline writes intermediates and final tensors
+  work_dir: ./outputs
+
+cohort:
+  # Adults only; switch to {min_age: 0, max_age: 17} for pediatric clock
+  min_age: 18
+  max_age: 89                  # MIMIC caps real age at 89; older recoded to 91
+  min_los_hours: 24
+  max_los_hours: 720           # 30 days
+  min_time_in_icu_before_death_h: 1
+  first_icu_stay_only: true    # one sample per patient (set false to keep all)
+
+time_binning:
+  bin_hours: 1                 # standard ICU benchmark resolution. Try 4 for shorter sequences.
+  max_seq_len: 512             # truncate / pad to this many bins
+  align_to: admit              # "admit" = t=0 is ICU intime; "discharge" = backwards from outtime
+
+features:
+  # Which CLIF tables to pull
+  clif_tables:
+    - vitals
+    - labs
+    - medication_admin_continuous
+    - medication_admin_intermittent
+    - respiratory_support
+    - patient_assessments
+  # Demographics from raw MIMIC patients/admissions
+  use_demographics: true
+  # Diagnoses: ICD-10 chapter as categorical (visit-level static)
+  use_diagnoses: true
+
+vocab:
+  min_frequency: 100           # drop tokens seen <100 times → <UNK>
+  unk_token_id: 1
+  pad_token_id: 0
+  mask_token_id: 2
+  reserved: 8                  # IDs 0..7 reserved for special tokens
+
+quantization:
+  n_bins: 256                  # EHRFormer's n_float_values
+  strategy: quantile           # "quantile" or "uniform"
+  missing_value_token: -1
+  clip_quantile_lo: 0.001      # clip extreme outliers before binning
+  clip_quantile_hi: 0.999
+
+split:
+  test_frac: 0.10
+  val_frac: 0.10
+  seed: 42
+  by: patient_id               # never by stay_id (leakage)
+
+chunking:
+  patients_per_chunk: 4096     # one .pt file per chunk
+  output_subdir: chunks
+  shard_subdirs: [train, val, test]

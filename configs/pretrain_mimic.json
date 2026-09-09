@@ -1,0 +1,43 @@
+{
+    "_comment": "MIMIC-IV pretraining config — adapted from upstream sample config. Fields marked AUTO are filled by scripts/adapt_config.py from preprocessing outputs.",
+    "debug": false,
+    "project": "ehrformer-mimic-pretrain",
+    "stage": "pretrain",
+    "mode": "pretrain",
+    "name": "ehrformer-mimic",
+    "model": "ehrformer",
+    "output_dir": "outputs/pretrain",
+
+    "n_gpus": [0, 1, 2, 3],
+    "n_epoch": 60,
+    "train": true,
+    "test": false,
+
+    "lr": 1e-4,
+    "wd": 0.05,
+
+    "output_dim": 768,
+    "proj_dim": 768,
+
+    "n_category_feats": 0,
+    "n_float_feats": 0,
+    "n_category_values": 0,
+    "n_float_values": 256,
+
+    "mask_ratio": 0.15,
+    "pool_emb": false,
+    "seq_max_len": 512,
+
+    "df_paths": "outputs/chunks",
+    "use_cache": true,
+    "dataset_col": "split",
+    "batch_size": 64,
+    "train_folds": ["train"],
+    "valid_folds": ["val"],
+    "test_folds": ["test"],
+
+    "feat_info_path": "outputs/feat_info.json",
+    "float_feats": "outputs/vocab/bin_edges.parquet",
+    "ckpt_path": "outputs/pretrain/log/version_0/checkpoint/last.ckpt",
+    "pred_folder": "outputs/pretrain/pred"
+}

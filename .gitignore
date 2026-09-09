@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Results and data are deliberately not tracked: the aggregate tables that used
+# to live here predated the temporal split and contradicted the report.
+outputs/
+*.npz
+*.parquet
+*.pt
